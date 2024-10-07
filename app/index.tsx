@@ -4,31 +4,49 @@ import { Link } from "expo-router";
 import {format} from 'date-fns';
 import { Colors } from "@/constants/Colors";
 import ThemedText from "@/components/ThemedText";
+import { useRef } from "react";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
+import SubcribeModal from "@/components/SubcribeModal";
+import { SignedIn, SignedOut, useAuth } from "@clerk/clerk-expo";
 
 export default function Index() {
   const colorScheme = useColorScheme();
   const backgroundColor = Colors[colorScheme ?? 'light'].background;
   const textColor = Colors[colorScheme ?? 'light'].text;
+  const subcribeModalRef = useRef<BottomSheetModal>(null);
+  const handlePresentSubscribeModal = () => subcribeModalRef.current?.present();
+  const {signOut} = useAuth();
 
   return (
     <View style={[styles.container,{backgroundColor}]}>
+      <SubcribeModal ref={subcribeModalRef}/>
       <View style={styles.header}>
         <Icon width={100} height={70} />
         <ThemedText style={styles.title}>Wordle</ThemedText>
         <ThemedText style={styles.text}> Get 6 chances to guess a 5-letter word.</ThemedText>
       </View>
       <View style={styles.menu}>
-        <Link href={'/game'} style={[styles.btn,{backgroundColor:colorScheme === 'light' ? '#000':'#4a4a4a'}]} asChild>
-        <TouchableOpacity>
-          <Text style={[styles.btnText, styles.primaryText]} >Play</Text>
-        </TouchableOpacity>
-        </Link>
 
+        <Link href={'/game'} style={[styles.btn,{backgroundColor:colorScheme === 'light' ? '#000':'#4a4a4a'}]} asChild>
+          <TouchableOpacity>
+            <Text style={[styles.btnText, styles.primaryText]} >Play</Text>
+          </TouchableOpacity>
+        </Link>
+        <SignedOut>
+          <Link href={'/login'}  style={[styles.btn,{borderColor:textColor}]} asChild>
+            <TouchableOpacity>
+              <ThemedText style={styles.btnText} >Log in</ThemedText>
+            </TouchableOpacity>
+          </Link>
+        </SignedOut>
+
+        <SignedIn>
+          <TouchableOpacity style={[styles.btn,{borderColor:textColor}]}>
+            <ThemedText onPress={()=> signOut()} style={styles.btnText} >Sign out</ThemedText>
+          </TouchableOpacity>
+        </SignedIn>
         <TouchableOpacity style={[styles.btn,{borderColor:textColor}]}>
-        <ThemedText style={styles.btnText} >Log in</ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.btn,{borderColor:textColor}]}>
-        <ThemedText style={styles.btnText} >Subscribe</ThemedText>
+        <ThemedText onPress={handlePresentSubscribeModal} style={styles.btnText} >Subscribe</ThemedText>
         </TouchableOpacity>
       </View>
       <View style={styles.footer}>
